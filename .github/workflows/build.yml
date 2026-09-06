@@ -1,4 +1,4 @@
-name: Build Android APK (Web App)
+name: Build Android APK
 
 on:
   workflow_dispatch:
@@ -15,38 +15,41 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Project Dependencies
+      - name: Install Dependencies & Build Web Assets
         run: |
           if [ -f package.json ]; then
             npm install
             npm run build --if-present
           fi
 
-      - name: Initialize Capacitor for Mobile Build
+      - name: Prepare Capacitor Framework
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "NotesApp" "com.example.notesapp" --web-dir .
+          
+          # Handle missing build directory automatically
+          DIST_DIR="."
+          if [ -d "dist" ]; then DIST_DIR="dist"; fi
+          if [ -d "build" ]; then DIST_DIR="build"; fi
+          
+          npx cap init "NotesApp" "com.example.notesapp" --web-dir "$DIST_DIR"
           npx cap add android
           npx cap sync android
 
-      - name: Build Android APK
+      - name: Compile Android APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
