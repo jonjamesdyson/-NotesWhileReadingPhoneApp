@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK (Web App)
 
 on:
   workflow_dispatch:
@@ -9,28 +9,45 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Install Project Dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm install
+            npm run build --if-present
+          fi
 
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Initialize Capacitor for Mobile Build
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npx cap init "NotesApp" "com.example.notesapp" --web-dir .
+          npx cap add android
+          npx cap sync android
 
-      - name: Upload APK
+      - name: Build Android APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
