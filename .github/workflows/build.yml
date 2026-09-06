@@ -34,13 +34,27 @@ jobs:
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
           
-          # Handle missing build directory automatically
+          # Detect web root directory
           DIST_DIR="."
           if [ -d "dist" ]; then DIST_DIR="dist"; fi
           if [ -d "build" ]; then DIST_DIR="build"; fi
           
-          npx cap init "NotesApp" "com.example.notesapp" --web-dir "$DIST_DIR"
+          # Explicitly create capacitor.config.json
+          cat <<EOF > capacitor.config.json
+          {
+            "appId": "com.example.notesapp",
+            "appName": "NotesApp",
+            "webDir": "$DIST_DIR",
+            "bundledWebRuntime": false
+          }
+          EOF
+
           npx cap add android
+          
+          # Ensure target plugin assets folder exists before sync
+          mkdir -p android/app/src/main/assets
+          touch android/app/src/main/assets/capacitor.plugins.json
+          
           npx cap sync android
 
       - name: Compile Android APK
