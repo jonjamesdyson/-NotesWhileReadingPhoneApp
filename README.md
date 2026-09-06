@@ -1,6 +1,6 @@
 # Nook 📖
 
-**Nook** is a mobile application designed to help you organize and manage notes while reading on your phone.
+**Nook** is a mobile application designed to help you organize/manage notes while reading and track your reading progress.
 
 > 🤖 **Note:** This application was generated using **Google AI Studio** and is automatically built and published directly from this repository.
 
