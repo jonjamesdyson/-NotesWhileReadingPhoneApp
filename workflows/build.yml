@@ -1,4 +1,4 @@
-name: Build Native Android Kotlin APK
+name: Build Native Android Kotlin APk
 
 on:
   workflow_dispatch:
