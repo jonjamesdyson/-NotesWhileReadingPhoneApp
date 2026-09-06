@@ -1,0 +1,6 @@
+{
+  "name": "Nook",
+  "description": "A minimalist and cozy reading log with book search, notes, reviews, and data export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
