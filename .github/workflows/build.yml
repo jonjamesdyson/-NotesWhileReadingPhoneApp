@@ -37,14 +37,18 @@ jobs:
             gradle assembleDebug
           fi
 
+      - name: Rename APK to Nook.apk
+        run: |
+          # Find the generated APK and copy it to Nook.apk in the workspace root
+          APK_PATH=$(find . -path "*/build/outputs/apk/debug/*.apk" | head -n 1)
+          cp "$APK_PATH" ./Nook.apk
+
       - name: Upload to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: "Latest App Build"
-          body: "Direct download link for the latest compiled Android APK."
-          files: |
-            **/build/outputs/apk/debug/*.apk
-            **/build/outputs/apk/release/*.apk
+          body: "Direct download link for the latest compiled Nook app."
+          files: ./Nook.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
