@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -23,38 +23,35 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Dependencies & Build Web Assets
+      - name: Install Project Dependencies
         run: |
           if [ -f package.json ]; then
             npm install
             npm run build --if-present
           fi
 
-      - name: Prepare Capacitor Framework
+      - name: Setup Capacitor and Android Platform
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          
-          # Detect web root directory
+          # Install matching Capacitor v6 toolchain
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 --save-dev
+
+          # Identify web assets folder
           DIST_DIR="."
           if [ -d "dist" ]; then DIST_DIR="dist"; fi
           if [ -d "build" ]; then DIST_DIR="build"; fi
-          
-          # Explicitly create capacitor.config.json
-          cat <<EOF > capacitor.config.json
-          {
-            "appId": "com.example.notesapp",
-            "appName": "NotesApp",
-            "webDir": "$DIST_DIR",
-            "bundledWebRuntime": false
-          }
-          EOF
 
+          # Generate capacitor configuration
+          npx cap init "NotesApp" "com.example.notesapp" --web-dir "$DIST_DIR"
+
+          # Add Android platform
           npx cap add android
-          
-          # Ensure target plugin assets folder exists before sync
+
+          # Pre-create required asset files to prevent sync crash
           mkdir -p android/app/src/main/assets
-          touch android/app/src/main/assets/capacitor.plugins.json
-          
+          echo "[]" > android/app/src/main/assets/capacitor.plugins.json
+
+          # Copy web assets and sync plugins
+          npx cap copy android
           npx cap sync android
 
       - name: Compile Android APK
